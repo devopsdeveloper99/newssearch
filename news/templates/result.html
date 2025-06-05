@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+    <style>
+        .scroll-container {
+            max-height: 80vh; /* Adjust height as needed */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+        table {
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+   <h2 style="margin-top: 40px;">📰 Latest News Articles based on your keywords</h2>
+
+    <div class="scroll-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Source</th>
+                    <th>Keyword</th>
+                    <th>Title</th>
+                    <th>Summary</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ article.source }}</td>
+                    <td>{{ article.keyword }}</td>
+                    <td>{{ article.title }}</td>
+                    <td>{{ article.summary|truncatechars:150 }}...</td>
+                    <td><a href="{{ article.link }}" target="_blank">View Article</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No articles found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p style="margin-top:20px;">Generated automatically 📬</p>
+</body>
+</html>
