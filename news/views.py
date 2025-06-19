@@ -1,17 +1,18 @@
 import json
 
-from django.http import HttpResponse, JsonResponse
+from django.http import  JsonResponse
 from django.shortcuts import render
-from django.template import loader
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from news.newsv3 import search_news, save_to_csv
 
 
+@ensure_csrf_cookie
 def news(request):
-    template = loader.get_template('search.html')
-    return HttpResponse(template.render())
+    return render(request, 'search.html')
 
 
+@ensure_csrf_cookie
 def search_view(request):
     if request.method == 'POST':
         try:
@@ -26,8 +27,8 @@ def search_view(request):
     return JsonResponse({"error": "Only POST allowed"}, status=405)
 
 
+@ensure_csrf_cookie
 def result_view(request):
-
     if request.method == "POST":
         try:
             data = json.loads(request.body)
