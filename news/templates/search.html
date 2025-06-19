@@ -1,4 +1,5 @@
 {% load static %}
+{% csrf_token %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
   <link rel="stylesheet" href="{% static 'styles/search.css' %}">
 </head>
 <body>
-    <div id="search">
+<div id="search">
    <div class="search-container">
        <input id="search-input" type="text" class="search-box" placeholder="Enter keywords separated by commas...">
        <br>
@@ -18,7 +19,6 @@
    </div>
 </div>
    <div id="resultsContainer"></div>
-
    <script src="{% static 'scripts/search.js' %}"></script>
 </body>
 </html>
