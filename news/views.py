@@ -1,6 +1,6 @@
 import json
 
-from django.http import  JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 
@@ -18,7 +18,8 @@ def search_view(request):
         try:
             data = json.loads(request.body.decode('utf-8'))
             query = data.get("query")
-            result = search_news(query)
+            keywords = [kw.strip() for kw in query.split(',') if kw.strip()]
+            result = search_news(keywords)
             save_to_csv(result)
             return JsonResponse({"message": result})
         except json.JSONDecodeError:

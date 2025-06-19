@@ -35,6 +35,7 @@ def search_news(keywords, max_results_per_feed=5):
 
         if "{query}" in feed_url_template:
             for keyword in keywords:
+                print("keyword "+keyword)
                 feed_url = feed_url_template.format(query=keyword.replace(' ', '+'))
                 feed = feedparser.parse(feed_url)
                 for entry in feed.entries[:max_results_per_feed]:
