@@ -1,3 +1,7 @@
+# How to run the project
+- python3 manage.py runserver
+- http://192.168.1.173:8000/
+
 # newssearch
 lsof -i :8000
 kill -9 2614
