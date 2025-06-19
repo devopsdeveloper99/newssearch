@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django migration files
+**/migrations/*.pyc
+**/migrations/__pycache__/
+**/migrations/*.py
+
+# Django secret settings (if any)
+*.env
+
+# SQLite database
+*.sqlite3
+
+# Media and static files (optional if using local storage)
+media/
+staticfiles/
+
+# VS Code and other IDE settings
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+env/
+venv/
+
+# Pip cache
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+
+# Log files
+*.log
+
+# Coverage and test reports
+htmlcov/
+.coverage
+.tox/
+.noseids
+.pytest_cache/
+
+# Git credentials or config
+*.pem
+*.key
+*.crt
+
+# Docker/compose generated files (if used)
+*.pid
