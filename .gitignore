@@ -20,7 +20,8 @@ __pycache__/
 # Media and static files (optional if using local storage)
 media/
 staticfiles/
-
+news/news_resultsV3.csv
+news_resultsV3.csv
 # VS Code and other IDE settings
 .vscode/
 .idea/
