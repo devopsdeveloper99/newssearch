@@ -15,6 +15,13 @@ rss_feeds = {
     # "BBC News": "http://feeds.bbci.co.uk/news/rss.xml",
     # "CNN Top Stories": "http://rss.cnn.com/rss/edition.rss",
     # "Reuters Top News": "http://feeds.reuters.com/reuters/topNews"
+    # Bangladeshi News Portals (if available)
+    "Dhaka Post": "https://www.dhakapost.com/rss",  # Confirmed
+    "Sarabangla": "https://sarabangla.net/feed/",  # WordPress-based
+    "The Daily Star": "https://www.thedailystar.net/rss",  # Confirmed
+    "BD Pratidin": "https://www.bd-pratidin.com/feed",  # WordPress-based
+    "Jagonews24": "https://www.jagonews24.com/rss",  # Confirmed
+    "Samakal": "https://samakal.com/rss",  # Confirmed
 }
 
 sender_email = 'devopsdeveloper99@gmail.com'
