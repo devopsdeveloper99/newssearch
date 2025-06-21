@@ -1,4 +1,5 @@
 # How to run the project
+- python3 manage.py runserver 0.0.0.0:8000
 - python3 manage.py runserver
 - http://192.168.1.173:8000/
 
