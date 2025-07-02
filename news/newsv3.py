@@ -1,3 +1,5 @@
+from urllib.parse import quote_plus
+
 import feedparser
 import requests
 from bs4 import BeautifulSoup
@@ -11,17 +13,20 @@ import os
 
 # ===== Config Section =====
 rss_feeds = {
-    "Google News": "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en",
+    # "Google News": "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en",
     # "BBC News": "http://feeds.bbci.co.uk/news/rss.xml",
     # "CNN Top Stories": "http://rss.cnn.com/rss/edition.rss",
     # "Reuters Top News": "http://feeds.reuters.com/reuters/topNews"
     # Bangladeshi News Portals (if available)
-    "Dhaka Post": "https://www.dhakapost.com/rss",  # Confirmed
-    "Sarabangla": "https://sarabangla.net/feed/",  # WordPress-based
-    "The Daily Star": "https://www.thedailystar.net/rss",  # Confirmed
-    "BD Pratidin": "https://www.bd-pratidin.com/feed",  # WordPress-based
-    "Jagonews24": "https://www.jagonews24.com/rss",  # Confirmed
-    "Samakal": "https://samakal.com/rss",  # Confirmed
+    # "Dhaka Post": "https://www.dhakapost.com/rss",  # Confirmed
+    # "Sarabangla": "https://sarabangla.net/feed/",  # WordPress-based
+    # "The Daily Star": "https://www.thedailystar.net/rss",  # Confirmed
+    # "BD Pratidin": "https://www.bd-pratidin.com/feed",  # WordPress-based
+    # "Jagonews24": "https://www.jagonews24.com/rss",  # Confirmed
+    # "Samakal": "https://samakal.com/rss",  # Confirmed
+    # "somoy": "https://news.google.com/rss/search?q=somoy+tv",
+    "prothom-alo": "https://www.prothomalo.com/feed",
+    "bdnews24":"https://bdnews24.com/?widgetName=rssfeed&widgetId=1150&getXmlFeed=true",
 }
 
 sender_email = 'devopsdeveloper99@gmail.com'
@@ -34,15 +39,67 @@ csv_filename = 'news/news_resultsV3.csv'
 
 # ===========================
 
+def get_youtube_videos(keyword, api_key):
+    all_youtube_articles = []
+    url = "https://www.googleapis.com/youtube/v3/search"
+    params = {
+        'q': keyword,
+        'part': 'snippet',
+        'type': 'video',
+        'maxResults': 5,
+        'key': api_key
+    }
+
+    response = requests.get(url, params=params).json()
+    for item in response.get('items', []):
+        title = item['snippet']['title']
+        video_id = item.get('id', {}).get('videoId')
+        if not video_id:
+            continue
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
+        all_youtube_articles.append({
+            'source': "Youtube",
+            'keyword': keyword,
+            'title': title,
+            'link': video_url,
+            'summary': fetch_article_summary(video_url)
+        })
+    return all_youtube_articles
+
+
+def get_facebook_news(keyword):
+    all_facebook_articles=[]
+    encoded_query = quote_plus(f"{keyword} site:facebook.com")
+    rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=bn&gl=BD&ceid=BD:bn"
+
+    feed = feedparser.parse(rss_url)
+
+    for entry in feed.entries[:5]:
+        all_facebook_articles.append({
+            'source': "Facebook",
+            'keyword': keyword,
+            'title': entry.title,
+            'link': entry.link,
+            'summary': fetch_article_summary(entry.link)
+        })
+    return all_facebook_articles
+
+
 def search_news(keywords, max_results_per_feed=5):
+    # get_facebook_news("BNP shadhin")
+    print("keywords "+keywords)
     all_articles = []
+    # all_articles.extend(get_youtube_videos(keywords, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
+    # all_articles.extend(get_facebook_news(keywords))
+
+    keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]
 
     for source, feed_url_template in rss_feeds.items():
         print(f"\n🌐 Fetching articles from {source}...")
 
         if "{query}" in feed_url_template:
             for keyword in keywords:
-                print("keyword "+keyword)
+                print("keyword " + keyword)
                 feed_url = feed_url_template.format(query=keyword.replace(' ', '+'))
                 feed = feedparser.parse(feed_url)
                 for entry in feed.entries[:max_results_per_feed]:

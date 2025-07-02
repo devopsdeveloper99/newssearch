@@ -56,3 +56,4 @@ htmlcov/
 
 # Docker/compose generated files (if used)
 *.pid
+
