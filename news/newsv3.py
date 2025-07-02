@@ -89,8 +89,8 @@ def search_news(keywords, max_results_per_feed=5):
     # get_facebook_news("BNP shadhin")
     print("keywords "+keywords)
     all_articles = []
-    # all_articles.extend(get_youtube_videos(keywords, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
-    # all_articles.extend(get_facebook_news(keywords))
+    all_articles.extend(get_youtube_videos(keywords, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
+    all_articles.extend(get_facebook_news(keywords))
 
     keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]
 
