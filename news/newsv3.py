@@ -13,8 +13,8 @@ import os
 
 # ===== Config Section =====
 rss_feeds = {
-    # "Google News": "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en",
-    # "BBC News": "http://feeds.bbci.co.uk/news/rss.xml",
+    "Google News": "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en",
+    "BBC News": "http://feeds.bbci.co.uk/news/rss.xml",
     # "CNN Top Stories": "http://rss.cnn.com/rss/edition.rss",
     # "Reuters Top News": "http://feeds.reuters.com/reuters/topNews"
     # Bangladeshi News Portals (if available)
@@ -86,20 +86,20 @@ def get_facebook_news(keyword):
 
 
 def search_news(keywords, max_results_per_feed=5):
-    # get_facebook_news("BNP shadhin")
     print("keywords "+keywords)
     all_articles = []
-    all_articles.extend(get_youtube_videos(keywords, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
-    all_articles.extend(get_facebook_news(keywords))
-
     keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]
+    for keyword in keywords:
+        print("keyword " + keyword)
+        print("youtube...")
+        all_articles.extend(get_youtube_videos(keyword, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
+        print("facebook...")
+        all_articles.extend(get_facebook_news(keyword))
 
-    for source, feed_url_template in rss_feeds.items():
-        print(f"\n🌐 Fetching articles from {source}...")
+        for source, feed_url_template in rss_feeds.items():
+            print(f"\n🌐 Fetching articles from {source}...")
 
-        if "{query}" in feed_url_template:
-            for keyword in keywords:
-                print("keyword " + keyword)
+            if "{query}" in feed_url_template:
                 feed_url = feed_url_template.format(query=keyword.replace(' ', '+'))
                 feed = feedparser.parse(feed_url)
                 for entry in feed.entries[:max_results_per_feed]:
@@ -110,10 +110,10 @@ def search_news(keywords, max_results_per_feed=5):
                         'link': entry.link,
                         'summary': fetch_article_summary(entry.link)
                     })
-        else:
-            feed = feedparser.parse(feed_url_template)
-            for entry in feed.entries[:max_results_per_feed * len(keywords)]:
-                for keyword in keywords:
+            else:
+                feed = feedparser.parse(feed_url_template)
+                for entry in feed.entries[:max_results_per_feed]:
+                    print("entry "+str(entry))
                     if keyword.lower() in entry.title.lower() or keyword.lower() in (entry.get('summary', '').lower()):
                         all_articles.append({
                             'source': source,
