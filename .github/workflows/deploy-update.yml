@@ -1,0 +1,27 @@
+name: Update Django App on EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger when code is pushed to main
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+
+      - name: Copy update script to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i ec2_key.pem deploy-update.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/
+
+      - name: Run update script on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "bash /home/${{ secrets.EC2_USER }}/deploy-update.sh"
