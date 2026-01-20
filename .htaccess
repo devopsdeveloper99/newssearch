@@ -1,0 +1,27 @@
+# Django Python Application Configuration
+# This tells the server to use Python/Passenger, not Node.js
+
+# Enable RewriteEngine
+RewriteEngine On
+
+# Serve static files directly (faster than Django)
+RewriteCond %{REQUEST_URI} ^/static/
+RewriteCond %{DOCUMENT_ROOT}/staticfiles%{REQUEST_URI} -f
+RewriteRule ^static/(.*)$ staticfiles/$1 [L]
+
+# Fallback: serve from app static directory
+RewriteCond %{REQUEST_URI} ^/static/
+RewriteCond %{DOCUMENT_ROOT}/news/static%{REQUEST_URI} -f
+RewriteRule ^static/(.*)$ news/static/$1 [L]
+
+# Pass all other requests to Django via Passenger
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ passenger_wsgi.py/$1 [L]
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
