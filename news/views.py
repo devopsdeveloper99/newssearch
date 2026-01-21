@@ -20,7 +20,9 @@ def search_view(request):
             query = data.get("query")
 
             result = search_news(query)
+            # print(f"result done")
             save_to_csv(result)
+            # print(f"save_to_csv done")
             return JsonResponse({"message": result})
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)

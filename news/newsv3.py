@@ -1,3 +1,4 @@
+import html
 from urllib.parse import quote_plus
 
 import feedparser
@@ -10,6 +11,11 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+import logging
+import feedparser
+
+# Configure a logger for this module
+logger = logging.getLogger(__name__)
 
 # ===== Config Section =====
 rss_feeds = {
@@ -72,7 +78,9 @@ def get_facebook_news(keyword):
     encoded_query = quote_plus(f"{keyword} site:facebook.com")
     rss_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=bn&gl=BD&ceid=BD:bn"
 
-    feed = feedparser.parse(rss_url)
+    feed = fetch_feed_safe(rss_url)
+    if not feed:
+        return []
 
     for entry in feed.entries[:5]:
         all_facebook_articles.append({
@@ -86,44 +94,115 @@ def get_facebook_news(keyword):
 
 
 def search_news(keywords, max_results_per_feed=5):
-    print("keywords "+keywords)
+    logger.info(f"keywords: {keywords}")
     all_articles = []
-    keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]
-    for keyword in keywords:
-        print("keyword " + keyword)
-        print("youtube...")
-        all_articles.extend(get_youtube_videos(keyword, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
-        print("facebook...")
-        all_articles.extend(get_facebook_news(keyword))
 
+    keywords_list = [kw.strip() for kw in keywords.split(',') if kw.strip()]
+
+    for keyword in keywords_list:
+        logger.info(f"Processing keyword: {keyword}")
+
+        # YouTube
+        try:
+            logger.info("Fetching YouTube videos...")
+            all_articles.extend(get_youtube_videos(keyword, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
+        except Exception as e:
+            logger.warning(f"Failed to fetch YouTube videos for '{keyword}': {e}")
+
+        # Facebook
+        try:
+            logger.info("Fetching Facebook news...")
+            all_articles.extend(get_facebook_news(keyword))
+            logger.info("Facebook fetch done")
+        except Exception as e:
+            logger.warning(f"Failed to fetch Facebook news for '{keyword}': {e}")
+
+        # RSS feeds
         for source, feed_url_template in rss_feeds.items():
-            print(f"\n🌐 Fetching articles from {source}...")
+            logger.warning(f"🌐 Fetching articles from {source}...")
 
-            if "{query}" in feed_url_template:
-                feed_url = feed_url_template.format(query=keyword.replace(' ', '+'))
+            try:
+                if "{query}" in feed_url_template:
+                    feed_url = feed_url_template.format(query=keyword.replace(' ', '+'))
+                else:
+                    feed_url = feed_url_template
+
                 feed = feedparser.parse(feed_url)
+                if feed.bozo:
+                    logger.warning(f"Failed to parse feed {feed_url}: {feed.bozo_exception}")
+
                 for entry in feed.entries[:max_results_per_feed]:
-                    all_articles.append({
-                        'source': source,
-                        'keyword': keyword,
-                        'title': entry.title,
-                        'link': entry.link,
-                        'summary': fetch_article_summary(entry.link)
-                    })
-            else:
-                feed = feedparser.parse(feed_url_template)
-                for entry in feed.entries[:max_results_per_feed]:
-                    print("entry "+str(entry))
-                    if keyword.lower() in entry.title.lower() or keyword.lower() in (entry.get('summary', '').lower()):
+                    try:
+                        title = entry.title
+                        summary = ""
+                        # Only fetch summary if keyword matches for non-query feeds
+                        if "{query}" not in feed_url_template:
+                            if not (keyword.lower() in title.lower() or keyword.lower() in entry.get('summary',
+                                                                                                     '').lower()):
+                                continue
+                        try:
+                            summary = fetch_article_summary(entry.link)
+                        except Exception as e:
+                            logger.warning(f"Failed to fetch summary for {entry.link}: {e}")
+
                         all_articles.append({
                             'source': source,
                             'keyword': keyword,
-                            'title': entry.title,
+                            'title': title,
                             'link': entry.link,
-                            'summary': fetch_article_summary(entry.link)
+                            'summary': summary
                         })
+                    except Exception as e:
+                        logger.warning(f"Failed to process entry: {e}")
 
+            except Exception as e:
+                logger.warning(f"Failed to fetch feed {feed_url_template} for keyword '{keyword}': {e}")
+
+    logger.warning(f"Total articles fetched: {len(all_articles)}")
     return all_articles
+
+
+# def search_news(keywords, max_results_per_feed=5):
+#     print("keywords "+keywords)
+#     all_articles = []
+#     keywords = [kw.strip() for kw in keywords.split(',') if kw.strip()]
+#     for keyword in keywords:
+#         print("keyword " + keyword)
+#         print("youtube...")
+#         all_articles.extend(get_youtube_videos(keyword, "AIzaSyAwoV63VltPHMgh2LJRZat6M6-ay-wzlr8"))
+#         print("facebook...")
+#         all_articles.extend(get_facebook_news(keyword))
+#         print("facebook... done")
+#
+#         for source, feed_url_template in rss_feeds.items():
+#             print("start--1")
+#             print(f"\n🌐 Fetching articles from {source}...")
+#
+#             if "{query}" in feed_url_template:
+#                 feed_url = feed_url_template.format(query=keyword.replace(' ', '+'))
+#                 feed = feedparser.parse(feed_url)
+#                 for entry in feed.entries[:max_results_per_feed]:
+#                     all_articles.append({
+#                         'source': source,
+#                         'keyword': keyword,
+#                         'title': entry.title,
+#                         'link': entry.link,
+#                         'summary': fetch_article_summary(entry.link)
+#                     })
+#             else:
+#                 feed = feedparser.parse(feed_url_template)
+#                 for entry in feed.entries[:max_results_per_feed]:
+#                     print("entry "+str(entry))
+#                     if keyword.lower() in entry.title.lower() or keyword.lower() in (entry.get('summary', '').lower()):
+#                         all_articles.append({
+#                             'source': source,
+#                             'keyword': keyword,
+#                             'title': entry.title,
+#                             'link': entry.link,
+#                             'summary': fetch_article_summary(entry.link)
+#                         })
+#
+#     return all_articles
 
 
 def fetch_article_summary(url):
@@ -145,10 +224,37 @@ def fetch_article_summary(url):
         return "Summary not available."
 
 
+def fetch_feed_safe(feed_url):
+    """
+    Fetch RSS feed and fix common XML issues.
+    Returns feedparser.FeedParserDict or None if failed.
+    """
+    try:
+        resp = requests.get(feed_url, timeout=10)
+        resp.raise_for_status()
+
+        # Force UTF-8
+        content = resp.content.decode('utf-8', errors='replace')
+        # Replace common problematic entities
+        content = html.unescape(content)
+        content = content.replace("&nbsp;", " ").replace("&amp;", "&")
+
+        # Remove control characters that break XML parsing
+        content = ''.join(c for c in content if ord(c) >= 32 or c in '\n\r\t')
+
+        feed = feedparser.parse(content)
+        if feed.bozo:
+            logger.warning(f"Failed to parse feed {feed_url}: {feed.bozo_exception}")
+        return feed
+    except Exception as e:
+        logger.error(f"Error fetching/parsing feed {feed_url}: {e}")
+        return None
+
+
 def save_to_csv(articles):
     df = pd.DataFrame(articles)
     df.to_csv(csv_filename, index=False)
-    print(f"\n✅ Saved {len(articles)} articles to {csv_filename}")
+    print(f"\nSaved {len(articles)} articles to {csv_filename}")
 
 
 def generate_html_body(articles):

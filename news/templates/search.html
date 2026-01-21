@@ -1,24 +1,27 @@
 {% load static %}
-{% csrf_token %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Search</title>
-  <link rel="stylesheet" href="{% static 'styles/search.css' %}">
+   <meta charset="UTF-8">
+   <meta name="csrf-token" content="{{ csrf_token }}">
+   <title>Search</title>
+   <link rel="stylesheet" href="{% static 'styles/search.css' %}">
 </head>
+
 <body>
-<div id="search">
-   <div class="search-container">
-       <input id="search-input" type="text" class="search-box" placeholder="Enter keywords separated by commas...">
-       <br>
-       <button id="search-button" class="search-button" onclick="callSearch()">Search</button>
+   <div id="search">
+      <div class="search-container">
+         <input id="search-input" type="text" class="search-box" placeholder="Enter keywords separated by commas...">
+         <br>
+         <button id="search-button" class="search-button" onclick="callSearch()">Search</button>
+      </div>
+      <div id="loadingOverlay">
+         <div class="spinner"></div>
+      </div>
    </div>
-   <div id="loadingOverlay">
-      <div class="spinner"></div>
-   </div>
-</div>
    <div id="resultsContainer"></div>
    <script src="{% static 'scripts/search.js' %}"></script>
 </body>
+
 </html>
